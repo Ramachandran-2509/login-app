@@ -1,3 +1,4 @@
+
 const mysql = require("mysql");
 const bcrypt = require("bcryptjs");
 
@@ -9,44 +10,40 @@ const db = mysql.createConnection({
     database: process.env.DATABASE,
   });
 
-
-
   exports.login = async(req, res) => {
-    try {
-      const { email, password } = req.body;
-      if(!email||!password) {
-        return res.status(400).render("login", {msg: "Please Enter Your Email and Password", msg_type: "error"});
-      }
-        
-      db.query(
-        "select * from users where email=?",
-        [email],
-        async (error, result) => {
-          console.log(result);
-          if (result.length <= 0) {
-            return res.status(401).render("login", {
-              msg: "Please Enter",
-              msg_type: "error",
-            });
-          } else {
-            if (!(await bcrypt.compare(password, result[0].PASS))) {
-              return res.status(401).render("login", {
-                 msg: "Please Enter Your pass & user",
-                 msg_type: "error",
-               });
-            }
-             else{
-                res.send("good")
-             }
-          }
+      try{
+        const {email, password} = req.body;
+        if(!email||!password) {
+          return res.status(400).render("login", {msg: "Please Enter Your Email and Password", msg_type: "error"});
         }
-      );
 
-    } 
-    catch (error) {
-      console.log(error);
-    }
+        db.query("select * from users where email=?",[email],async(error, result)=>{
+          console.log(result)
+          if(result.length<=0){
+            return res.status(400).render("login", 
+            {msg: "Incorrect Email and Password",
+            msg_type: "error",
+          });      
+          }else{
+            if(!(await bcrypt.compare(password,result[0].PASS))) {  
+              return res.status(401).render("login", 
+            {msg: "wrong Email and Password",
+            msg_type: "error",
+            }); 
+            }else{
+              res.send("good")
+            }
+          }
+
+        });
+
+
+      }catch(error){
+          console.log(error)
+      }
   };
+
+
 
 exports.register = (req, res)=>{
     console.log(req.body);
